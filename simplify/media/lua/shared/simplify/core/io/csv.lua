@@ -15,7 +15,8 @@ local File = require 'simplify/core/io/file.lua'
 
 local CSV = {}
 
-local function parseCSVLine(strLine, strSep)
+local function parseCSVLine(strLine, strSeparator)
+	strSeparator = strSeparator or ','
 	if (not strLine) then
 		return nil
 	end
@@ -26,7 +27,7 @@ local function parseCSVLine(strLine, strSep)
 		return nil
 	end
 	
-	strSep = strSep or ','
+	strSeparator = strSeparator or ','
 	local t = {}
 	while true do
 		c = string.sub(strLine, iPos, iPos)
@@ -43,7 +44,7 @@ local function parseCSVLine(strLine, strSep)
 			table.insert(t, strVal)
 			iPos = iPos + 1
 		else
-			local iStartPos, iEndPos = string.find(strLine, strSep, iPos)
+			local iStartPos, iEndPos = string.find(strLine, strSeparator, iPos)
 			if (iStartPos) then
 				table.insert(t,string.sub(strLine, iPos,iStartPos-1))
 				iPos = iEndPos + 1
@@ -56,8 +57,8 @@ local function parseCSVLine(strLine, strSep)
 	return t
 end
 
-local function parseValues(tValues, strSep)
-	strSep = strSep or ','
+local function parseValues(tValues, strSeparator)
+	strSeparator = strSeparator or ','
 	local strLine = ""
 	for i=1, #tValues do
 		local strVal = ""
@@ -75,12 +76,12 @@ local function parseValues(tValues, strSep)
 			bQuote = true
 			strVal = tValues[i]:gsub('(")', '""')
 		else
-			if (tValues[i]:find(strSep, 1)) then bQuote = true end
+			if (tValues[i]:find(strSeparator, 1)) then bQuote = true end
 			strVal = strVal .. tValues[i]	
 		end
 		if (bQuote) then strVal = '"' .. strVal .. '"' end
 		strLine = strLine .. strVal
-		if (j < #tValues) then strLine = strLine .. strVal .. strSeparator end
+		if (i < #tValues) then strLine = strLine .. strSeparator end
 	end
 	return strLine
 end
@@ -102,15 +103,8 @@ end
 ** Array of 'CSV' values. Each array index contains array of values separated by provided separator.
 **
 --]]
-CSV.readFile = function(strModId, strFilePath, strSeparator, bHeader)
+CSV.readFile = function(strModID, strFilePath, strSeparator, bHeader)
 	bHeader = bHeader or false
-	--[[
-	if (strModId == nil) then
-		IllegalArgumentException:throw("CSV#readFile - Argument 'strModId' is nil.")
-	elseif (type(strModId) ~= "string") then
-		IllegalArgumentException:throw("CSV#readFile - Argument 'strModId' is not a string type.")
-	end
-	--]]
 	
 	if (strFilePath == nil) then
 		IllegalArgumentException:throw("CSV#readFile - Argument 'strFilePath' is nil.")
@@ -118,9 +112,9 @@ CSV.readFile = function(strModId, strFilePath, strSeparator, bHeader)
 		IllegalArgumentException:throw("CSV#readFile - Argument 'strFilePath' is not a string type.")
 	end
 	
-	local file = File.getModFileReader(strModId, strFilePath)
+	local file = File.getModFileReader(strModID, strFilePath)
 	if (not file) then
-		RunTimeException:throw(string.format("CSV#readFile - File not found! Path: '%s/%s'", strModId, strFilePath))
+		RunTimeException:throw(string.format("CSV#readFile - File not found! Path: '%s'", strFilePath))
 	end
 	
 	strSeparator = strSeparator or ","
@@ -129,7 +123,6 @@ CSV.readFile = function(strModId, strFilePath, strSeparator, bHeader)
 	local strLine = file:readLine()
 	while strLine do
 		if (not strLine:simplifyStartsWith("--")) then
-			--local values = strLine:split(strSeparator)
 			if (bHeader and not t.header) then
 				t.header = parseCSVLine(strLine, strSeparator)
 			else
@@ -157,14 +150,12 @@ end
 ** strSeparator - CSV separator. Default is ";"
 **
 --]]
-CSV.writeFile = function(strModId, strFilePath, bCreate, bAppend, tArray, strSeparator, bHeader)
-	--[[
-	if (strModId == nil) then
+CSV.writeFile = function(strModID, strFilePath, bCreate, bAppend, tArray, strSeparator, bHeader)
+	if (strModID == nil) then
 		IllegalArgumentException:throw("CSV#writeFile - Argument 'strModId' is nil.")
-	elseif (type(strModId) ~= "string") then
+	elseif (type(strModID) ~= "string") then
 		IllegalArgumentException:throw("CSV#writeFile - Argument 'strModId' is not a string type.")
 	end
-	--]]
 	
 	if (strFilePath == nil) then
 		IllegalArgumentException:throw("CSV#writeFile - Argument 'strFilePath' is nil.")
@@ -174,7 +165,7 @@ CSV.writeFile = function(strModId, strFilePath, bCreate, bAppend, tArray, strSep
 	
 	if (bCreate == nil) then
 		IllegalArgumentException:throw("CSV#writeFile - Argument 'bCreate' is nil.")
-	elseif (type(bCreateFile) ~= "boolean") then
+	elseif (type(bCreate) ~= "boolean") then
 		IllegalArgumentException:throw("CSV#writeFile - Argument 'bCreate' is not a boolean type.")
 	end
 	
@@ -184,27 +175,17 @@ CSV.writeFile = function(strModId, strFilePath, bCreate, bAppend, tArray, strSep
 		IllegalArgumentException:throw("CSV#writeFile - Argument 'bAppend' is not a boolean type.")
 	end
 	
-	local file = File.getModFileWriter(strModId, strFilePath, bCreate, bAppend)
-	if (not file)
-		and (not bCreate) then
-		RunTimeException:throw(string.format("CSV#writeFile - File not found! Path: '%s/%s'", strModId, strFilePath))
+	local file = File.getModFileWriter(strModID, strFilePath, bCreate, bAppend)
+	if (not file) and (not bCreate) then
+		RunTimeException:throw(string.format("CSV#writeFile - File not found! Path: '%s'", strFilePath))
 	end
 	
 	strSeparator = strSeparator or ";"
-	
-	if (bHeader) then file:writeln(parseValues(tArray.header)) end
+	if (bHeader) then file:writeln(parseValues(tArray.header, strSeparator)) end
 	for i=1, #tArray do
 		local tValues = tArray[i]
 		local strLine = ""
-		--[[
-		for j=1, #tValues do
-			strLine = strLine .. tValues[j]
-			if (j < #tValues) then
-				strLine = strLine .. strSeparator
-			end
-		end
-		--]]
-		strLine = parseValues(tValues)
+		strLine = parseValues(tValues, strSeparator)
 		file:writeln(strLine)
 	end
 	file:close()

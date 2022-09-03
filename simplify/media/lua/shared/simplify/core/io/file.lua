@@ -26,22 +26,14 @@ local File = {}
 ** 'BufferedReader' if mod file exists, otherwise 'nil'.
 **
 --]]
-File.getModFileReader = function(strModId, strPath)
-	--[[
-	if (strModId == nil) then
-		IllegalArgumentException:throw("File#getModFileReader - Argument 'strModId' is nil.")
-	elseif (type(strModId) ~= "string") then
-		IllegalArgumentException:throw("File#getModFileReader - Argument 'strModId' is not a string type.")
-	end
-	--]]
-	
+File.getModFileReader = function(strModID, strPath)
 	if (strPath == nil) then
 		IllegalArgumentException:throw("File#getModFileReader - Argument 'strPath' is nil.")
 	elseif (type(strPath) ~= "string") then
 		IllegalArgumentException:throw("File#getModFileReader - Argument 'strPath' is not a string type.")
 	end
 	
-	return getModFileReader(strModId, strPath, false)
+	return getModFileReader(strModID, strPath, false)
 end
 
 --[[
@@ -60,14 +52,12 @@ end
 ** 'LuaFileWriter' if mod file exists, otherwise 'nil' if createFile is set to false.
 **
 --]]
-File.getModFileWriter = function(strModId, strPath, bCreate, bAppend)
-	--[[
-	if (strModId == nil) then
+File.getModFileWriter = function(strModID, strPath, bCreate, bAppend)
+	if (strModID == nil) then
 		IllegalArgumentException:throw("File#getModFileWriter - Argument 'strModId' is nil.")
-	elseif (type(strModId) ~= "string") then
+	elseif (type(strModID) ~= "string") then
 		IllegalArgumentException:throw("File#getModFileWriter - Argument 'strModId' is not a string type.")
 	end
-	--]]
 	
 	if (strPath == nil) then
 		IllegalArgumentException:throw("File#getModFileWriter - Argument 'strPath' is nil.")
@@ -79,7 +69,7 @@ File.getModFileWriter = function(strModId, strPath, bCreate, bAppend)
 	
 	if (bCreate == nil) then
 		IllegalArgumentException:throw("File#getModFileWriter - Argument 'bCreate' is nil.")
-	elseif (type(bCreateFile) ~= "boolean") then
+	elseif (type(bCreate) ~= "boolean") then
 		IllegalArgumentException:throw("File#getModFileWriter - Argument 'bCreate' is not a boolean type.")
 	end
 	
@@ -89,12 +79,11 @@ File.getModFileWriter = function(strModId, strPath, bCreate, bAppend)
 		IllegalArgumentException:throw("File#getModFileWriter - Argument 'bAppend' is not a boolean type.")
 	end
 	
-	local file = getModFileReader(strModId, strPath, false)
+	local file = getModFileReader(strModID, strPath, false)
 	if (not file) and (not bCreate) then
 		return nil
-	else
-		return getModFileWriter(strModId, strPath, bCreate, bAppend)
 	end
+	return getModFileWriter(strModID, strPath, bCreate, bAppend)
 end
 
 File.getContent = function(fReader)
