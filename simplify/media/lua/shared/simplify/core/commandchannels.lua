@@ -25,16 +25,13 @@ local function serverNewIndex(t, k, v)
 end
 
 local function clientIndex(t, k)
-	print("Command Channel Index Called")
 	if (not tClientMods[k]) then
-		print("K: " .. k)
 		tClientMods[k] = {}
 	end
 	return tClientMods[k]
 end
 
 local function clientNewIndex(t, k, v)
-	print("Command Channel New Index Called")
 	tClientMods[k] = v
 end
 
@@ -74,39 +71,4 @@ Events.OnServerCommand = function(module, command, args)
 	end
 end
 
---[[
-if (not isClient() or isServer()) then
-	--print("Simplify Command Channels: Server!")
-	
-	local function onClientCommand(module, command, player, args)
-		if (not isServer()) then return end
-		EventManager.triggerEvent("OnClientCommand", module, command, player, args)
-		
-		if (not tServerMods[module]) then return end
-		
-		if (tServerMods[module][command]) then
-			tServerMods[module][command](player, args)
-		else
-			tServerMods[module]["default"](command, player, args)
-		end
-	end
-	Events.OnClientCommand.Add(onClientCommand)
-elseif (not isServer() or isClient()) then
-	--print("Simplify Command Channels: Client!")
-	
-	local function onServerCommand(module, command, args)
-		if (not isClient()) then return end
-		EventManager.triggerEvent("OnServerCommand", module, command, args)
-		
-		if (not tClientMods[module]) then return end
-		
-		if (tClientMods[module][command]) then
-			tClientMods[module][command](args)
-		else
-			tClientMods[module]["default"](command, args)
-		end
-	end
-	Events.OnServerCommand.Add(onServerCommand)
-end
---]]
 return table.freeze(CommandChannels)
