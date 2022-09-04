@@ -52,6 +52,11 @@ namespace.Events = require 'simplify/core/events/events.lua'
 
 namespace.CommandChannels = require 'simplify/core/commandchannels.lua'
 
+-- Timers
+local timer = {}
+timer.SystemTimer = require 'simplify/core/timer/systemtimer.lua'
+namespace.timer = table.freeze(timer)
+
 Simplify = table.freeze(namespace)
 
 -- Mod Loader
